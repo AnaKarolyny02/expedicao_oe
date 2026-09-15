@@ -122,6 +122,16 @@
     }
     @keyframes chipIn { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
     .chip-lbl { font-family: var(--fnt-m); font-size: 11px; font-weight: 500; color: var(--vp); white-space: nowrap; }
+    .chip-sep  { color: #ccc; margin: 0 3px; font-size: 10px; }
+    .chip-vol  { display:inline-flex; align-items:center; gap:3px; }
+    .chip-vol-lbl { font-size: 10px; color: #888; }
+    .chip-vol-inp {
+      width: 36px; padding: 1px 4px; font-size: 11px; font-weight: 600; color: var(--vp);
+      border: 1px solid #b6d4be; border-radius: 4px; text-align: center;
+      background: #f0f7f2; -moz-appearance: textfield; }
+    .chip-vol-inp::-webkit-inner-spin-button,
+    .chip-vol-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .chip-vol-inp:focus { outline: none; border-color: var(--vp); }
     .chip-rm {
       background: none; border: none; cursor: pointer; color: var(--ts);
       font-size: 12px; line-height: 1; width: 15px; height: 15px;
@@ -521,10 +531,10 @@
     const s = input.replace(/\D/g, '');
     if (s.length === 44) {
       const num = parseInt(s.substring(25, 34), 10);
-      return { chave: s, display: `NF ${num.toLocaleString('pt-BR')}` };
+      return { chave: s, display: `NF ${num.toLocaleString('pt-BR')}`, volumes: 1 };
     }
     if (s.length >= 1 && s.length <= 9) {
-      return { chave: s, display: `NF ${parseInt(s, 10).toLocaleString('pt-BR')}` };
+      return { chave: s, display: `NF ${parseInt(s, 10).toLocaleString('pt-BR')}`, volumes: 1 };
     }
     return null;
   }
@@ -586,6 +596,14 @@
         c.className = 'chip';
         c.innerHTML = `
           <span class="chip-lbl">${nf.display}</span>
+          <span class="chip-sep">|</span>
+          <span class="chip-vol">
+            <span class="chip-vol-lbl">📦</span>
+            <input class="chip-vol-inp" type="number" min="1" value="${nf.volumes || 1}"
+              title="Qtd. volumes"
+              onchange="setVolumes('${destId}','${nf.chave}',this.value)"
+              onclick="event.stopPropagation()">
+          </span>
           <button class="chip-rm" onclick="removerNota('${destId}','${nf.chave}')" title="Remover">✕</button>`;
         area.appendChild(c);
       });
@@ -593,12 +611,22 @@
     }
   }
 
+  function setVolumes(destId, chave, val) {
+    const dest = destinos.find(d => d.id === destId);
+    if (!dest) return;
+    const nota = dest.notas.find(n => n.chave === chave);
+    if (nota) nota.volumes = Math.max(1, parseInt(val, 10) || 1);
+    atualizarTotal();
+  }
+
   function atualizarTotal() {
-    const total    = destinos.reduce((s, d) => s + d.notas.length, 0);
-    const ndest    = destinos.filter(d => d.notas.length > 0).length;
-    const badge    = document.getElementById('total-badge');
-    badge.textContent = total > 0
-      ? `${total} nota${total > 1 ? 's' : ''} · ${ndest} destino${ndest > 1 ? 's' : ''}`
+    const totalNotas   = destinos.reduce((s, d) => s + d.notas.length, 0);
+    const totalVolumes = destinos.reduce((s, d) =>
+      s + d.notas.reduce((sv, n) => sv + (n.volumes || 1), 0), 0);
+    const ndest        = destinos.filter(d => d.notas.length > 0).length;
+    const badge        = document.getElementById('total-badge');
+    badge.textContent  = totalNotas > 0
+      ? `${totalNotas} nota${totalNotas > 1 ? 's' : ''} · ${totalVolumes} vol · ${ndest} destino${ndest > 1 ? 's' : ''}`
       : '';
   }
 

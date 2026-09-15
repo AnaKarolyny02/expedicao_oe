@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OE · Emissão de Romaneio</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -371,10 +372,7 @@
     document.getElementById('dataEmbarque').value =
       hoje.toISOString().split('T')[0];
 
-    // Suporte à câmera
-    if (!('BarcodeDetector' in window)) {
-      document.getElementById('sem-sup').style.display = 'block';
-    }
+    // Câmera suportada via ZXing (funciona em qualquer navegador moderno)
 
     // Relógio
     atualizarClock();
@@ -470,10 +468,7 @@
     // Atualizar totais
     atualizarTotal();
 
-    // Esconder btn câmera se sem suporte
-    if (!('BarcodeDetector' in window)) {
-      document.querySelectorAll('.btn-cam').forEach(b => b.style.display = 'none');
-    }
+
   }
 
   function gerarDestinoHTML(d, n) {
@@ -618,37 +613,65 @@
     }
   }
 
+  // ── ZXing reader (funciona em Chrome, Edge, Firefox, Safari) ──
+  let zxingReader = null;
+
   async function abrirCamera(destId) {
-    if (cameraStream) fecharCamera();
+    fecharCamera(); // garante que não há câmera anterior ativa
+
+    camDestinoId = destId;
+    const dest   = destinos.find(d => d.id === destId);
+    document.getElementById('cam-label').textContent = dest?.usina || '(selecione a usina acima)';
+    document.getElementById('cam-global').classList.add('aberta');
+    document.getElementById(`bcam-${destId}`)?.classList.add('ativa');
+    sincronizarEstiloCam();
 
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 } }
+      zxingReader = new ZXing.BrowserMultiFormatReader();
+
+      // Prefere câmera traseira em celular
+      const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+      const back    = devices.find(d => /back|rear|environment/i.test(d.label)) || devices[0];
+      const deviceId = back ? back.deviceId : undefined;
+
+      lastScan = '';
+      await zxingReader.decodeFromVideoDevice(deviceId, 'video', (result, err) => {
+        if (!result || !camDestinoId) return;
+
+        const raw = result.getText().replace(/\D/g, '');
+        if (!raw || raw === lastScan) return;
+        lastScan = raw;
+
+        const nf = extrairNF(raw);
+        if (!nf) return;
+
+        if (!destinos.some(d => d.notas.some(n => n.chave === nf.chave))) {
+          const dest = destinos.find(d => d.id === camDestinoId);
+          if (dest) {
+            dest.notas.push(nf);
+            atualizarChips(camDestinoId);
+            atualizarTotal();
+            if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+          }
+        }
+
+        // Pausa de 1s entre leituras para não duplicar
+        setTimeout(() => { lastScan = ''; }, 1000);
       });
 
-      camDestinoId = destId;
-      const dest   = destinos.find(d => d.id === destId);
-      document.getElementById('cam-label').textContent = dest?.usina || '(selecione a usina acima)';
+      // Expõe o stream para fecharCamera poder parar
+      const video = document.getElementById('video');
+      cameraStream = video.srcObject;
 
-      document.getElementById('video').srcObject = cameraStream;
-      document.getElementById('cam-global').classList.add('aberta');
-      document.getElementById(`bcam-${destId}`)?.classList.add('ativa');
-
-      sincronizarEstiloCam();
-
-      detector = new BarcodeDetector({ formats: ['code_128','code_39','itf','qr_code'] });
-      lastScan  = '';
-      scanInterval = setInterval(escanear, 350);
-
-    } catch (_) {
+    } catch (e) {
       mostrarFeedback('Câmera indisponível. Verifique as permissões do navegador.', 'erro');
-      cameraStream = null; camDestinoId = null;
+      fecharCamera();
     }
   }
 
   function fecharCamera() {
+    if (zxingReader) { try { zxingReader.reset(); } catch(_){} zxingReader = null; }
     if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-    if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
 
     if (camDestinoId) document.getElementById(`bcam-${camDestinoId}`)?.classList.remove('ativa');
     camDestinoId = null;
@@ -665,35 +688,8 @@
     });
   }
 
-  async function escanear() {
-    const video = document.getElementById('video');
-    if (!video.readyState || !detector || !camDestinoId) return;
-
-    try {
-      const results = await detector.detect(video);
-      if (!results.length) return;
-
-      const raw = results[0].rawValue.replace(/\D/g, '');
-      if (!raw || raw === lastScan) return;
-      lastScan = raw;
-
-      const nf = extrairNF(raw);
-      if (!nf) return;
-
-      if (!destinos.some(d => d.notas.some(n => n.chave === nf.chave))) {
-        const dest = destinos.find(d => d.id === camDestinoId);
-        if (dest) {
-          dest.notas.push(nf);
-          atualizarChips(camDestinoId);
-          atualizarTotal();
-          if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-        }
-      }
-
-      await new Promise(r => setTimeout(r, 900));
-      lastScan = '';
-    } catch (_) {}
-  }
+  // (função escanear não mais necessária — ZXing faz isso internamente)
+  async function escanear() {}
 
   // ══════════════════════════════════════════════════════════════
   // ENVIO

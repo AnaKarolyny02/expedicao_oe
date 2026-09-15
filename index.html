@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OE · Emissão de Romaneio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --vp: #003D1E; --vg: #00592A; --va: #00843D;
+      --vc: #E8F3EA; --fd: #F3F8F4; --am: #F4A900; --amc: #FFF8E1;
+      --br: #FFFFFF; --tx: #162318; --ts: #4A6350; --bd: #C8DDD0;
+      --er: #D32F2F; --erc: #FFEBEE;
+      --fnt-d: 'Barlow Condensed', sans-serif;
+      --fnt-b: 'Inter', sans-serif;
+      --fnt-m: 'Roboto Mono', monospace;
+      --rad: 10px; --sh: 0 2px 8px rgba(0,61,30,0.08);
+    }
+
+    body { font-family: var(--fnt-b); background: var(--fd); color: var(--tx); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--vp); color: white; height: 60px;
+      display: flex; align-items: center; padding: 0 24px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .h-inner { width: 100%; max-width: 860px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .h-logo  { display: flex; align-items: center; gap: 12px; }
+
+    .h-company { font-family: var(--fnt-d); font-size: 17px; font-weight: 600; letter-spacing: .3px; }
+    .h-sub     { font-size: 10px; color: rgba(255,255,255,.5); letter-spacing: 1.2px; text-transform: uppercase; display: block; margin-top: 1px; }
+    .h-clock   { font-family: var(--fnt-m); font-size: 12px; color: rgba(255,255,255,.6); }
+
+    /* ── MAIN ── */
+    main { max-width: 860px; margin: 0 auto; padding: 28px 24px 80px; }
+    .pg-title { font-family: var(--fnt-d); font-size: 26px; font-weight: 700; color: var(--vg); letter-spacing: .2px; }
+    .pg-sub   { font-size: 13px; color: var(--ts); margin-top: 3px 0 24px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--br); border-radius: var(--rad); border: 1px solid var(--bd);
+      padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--sh);
+    }
+    .ct {
+      font-family: var(--fnt-d); font-size: 14px; font-weight: 600; color: var(--vg);
+      text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 18px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--vc);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ct-bar { width: 4px; height: 18px; background: var(--am); border-radius: 2px; flex-shrink: 0; }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    label {
+      font-size: 11px; font-weight: 600; color: var(--ts);
+      text-transform: uppercase; letter-spacing: .6px;
+    }
+    .req { color: var(--am); margin-left: 2px; }
+
+    input[type="text"], input[type="date"], select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--bd);
+      border-radius: 8px; font-family: var(--fnt-b); font-size: 14px;
+      color: var(--tx); background: var(--br); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus, select:focus {
+      border-color: var(--va); box-shadow: 0 0 0 3px rgba(0,132,61,.12);
+    }
+    select {
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A6350' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px;
+    }
+
+    /* ── DESTINO CARDS ── */
+    .destino-card {
+      border: 1.5px solid var(--bd); border-radius: var(--rad);
+      padding: 14px 16px; margin-bottom: 10px; background: var(--fd);
+      transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .destino-card.cam-on {
+      border-color: var(--am); background: #FFFDF3;
+      box-shadow: 0 0 0 3px rgba(244,169,0,.18);
+    }
+    .dest-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .dest-num {
+      width: 26px; height: 26px; background: var(--vp); color: white;
+      font-family: var(--fnt-d); font-size: 14px; font-weight: 700;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .dest-label {
+      flex: 1; font-family: var(--fnt-d); font-size: 16px; font-weight: 600;
+      color: var(--vp); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dest-label.ph { color: var(--ts); font-weight: 400; font-style: italic; opacity: .65; }
+    .btn-del-dest {
+      background: none; border: none; cursor: pointer; color: var(--ts);
+      opacity: .4; font-size: 14px; padding: 4px 7px; border-radius: 5px;
+      transition: opacity .15s, background .15s, color .15s; flex-shrink: 0;
+    }
+    .btn-del-dest:hover { opacity: 1; background: #FFEBEE; color: #C62828; }
+
+    /* ── NF-e chips ── */
+    .chips-area {
+      min-height: 50px; background: var(--br); border: 1.5px dashed var(--bd);
+      border-radius: 8px; padding: 8px 10px; display: flex; flex-wrap: wrap;
+      gap: 6px; align-content: flex-start; margin-bottom: 10px;
+    }
+    .empty-hint { width: 100%; text-align: center; font-size: 12px; color: var(--ts); opacity: .5; padding: 6px 0; pointer-events: none; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--amc); border: 1px solid rgba(244,192,48,.5);
+      border-left: 4px solid var(--am); border-radius: 5px; padding: 3px 7px 3px 9px;
+      animation: chipIn .16s ease;
+    }
+    @keyframes chipIn { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
+    .chip-lbl { font-family: var(--fnt-m); font-size: 11px; font-weight: 500; color: var(--vp); white-space: nowrap; }
+    .chip-rm {
+      background: none; border: none; cursor: pointer; color: var(--ts);
+      font-size: 12px; line-height: 1; width: 15px; height: 15px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      opacity: .5; padding: 0; transition: opacity .12s, background .12s;
+    }
+    .chip-rm:hover { opacity: 1; background: rgba(0,0,0,.07); }
+
+    /* ── INPUT ROW ── */
+    .input-row { display: flex; gap: 8px; align-items: stretch; }
+    .nfe-grp   { flex: 1; display: flex; }
+    .nfe-grp input {
+      border-radius: 8px 0 0 8px; border-right: none;
+      font-family: var(--fnt-m); font-size: 13px;
+    }
+    .nfe-grp input:focus { border-color: var(--va); box-shadow: 0 0 0 3px rgba(0,132,61,.12); z-index: 1; position: relative; }
+    .btn-add {
+      background: var(--va); color: white; border: none; padding: 0 16px;
+      border-radius: 0 8px 8px 0; font-family: var(--fnt-b); font-size: 13px;
+      font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s;
+    }
+    .btn-add:hover { background: var(--vg); }
+    .btn-cam {
+      background: var(--vc); color: var(--vg); border: 1.5px solid var(--bd);
+      padding: 0 13px; border-radius: 8px; font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s; flex-shrink: 0;
+    }
+    .btn-cam:hover { background: var(--bd); }
+    .btn-cam.ativa { background: #FFECB3; border-color: var(--am); }
+
+    /* ── ADD DESTINO BTN ── */
+    .btn-add-dest {
+      width: 100%; padding: 12px; background: transparent;
+      border: 2px dashed var(--bd); border-radius: var(--rad);
+      color: var(--va); font-family: var(--fnt-b); font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: background .15s, border-color .15s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      margin-top: 4px;
+    }
+    .btn-add-dest:hover { background: var(--vc); border-color: var(--va); }
+
+    /* ── CAMERA GLOBAL ── */
+    .cam-global {
+      border-radius: var(--rad); overflow: hidden; background: #000;
+      margin-bottom: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      display: none;
+    }
+    .cam-global.aberta { display: block; animation: fadeUp .25s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .cam-bar {
+      background: rgba(0,61,30,.92); color: white; padding: 8px 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .cam-bar-info { font-size: 12px; display: flex; align-items: center; gap: 8px; }
+    .cam-bar-info strong { color: var(--am); font-size: 13px; }
+    .cam-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; animation: pulse 1.5s ease infinite; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.6)} 50%{box-shadow:0 0 0 5px rgba(74,222,128,0)} }
+    .btn-close-cam {
+      background: rgba(255,255,255,.15); color: white; border: none;
+      border-radius: 5px; padding: 5px 11px; font-size: 11px; cursor: pointer;
+    }
+    #video { width: 100%; max-height: 230px; display: block; object-fit: cover; }
+    .scan-overlay {
+      position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .cam-wrap-inner { position: relative; }
+    .scan-frame { width: 220px; height: 65px; border: 2px solid var(--am); border-radius: 4px; position: relative; }
+    .scan-beam {
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: rgba(244,169,0,.85); box-shadow: 0 0 8px rgba(244,169,0,.6);
+      animation: beam 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes beam { from{top:10%} to{top:85%} }
+    .scan-msg { margin-top: 8px; font-size: 11px; color: rgba(255,255,255,.85); background: rgba(0,0,0,.5); padding: 3px 10px; border-radius: 20px; }
+
+    /* ── SEM SUPORTE ── */
+    .sem-sup { display: none; font-size: 12px; color: var(--ts); padding: 6px 10px; background: #FFF9E6; border-radius: 6px; border-left: 3px solid var(--am); margin-top: 8px; }
+
+    /* ── ACTIONS ── */
+    .actions { display: flex; gap: 10px; justify-content: flex-end; padding-top: 4px; }
+    .btn-enviar {
+      background: var(--vg); color: white; border: none; padding: 12px 30px;
+      border-radius: var(--rad); font-family: var(--fnt-d); font-size: 17px;
+      font-weight: 600; letter-spacing: .3px; cursor: pointer;
+      transition: background .15s, transform .1s; display: flex; align-items: center; gap: 8px;
+    }
+    .btn-enviar:hover  { background: var(--vp); }
+    .btn-enviar:active { transform: scale(.98); }
+    .btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-limpar {
+      background: transparent; color: var(--ts); border: 1.5px solid var(--bd);
+      padding: 11px 22px; border-radius: var(--rad); font-family: var(--fnt-b);
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: background .15s;
+    }
+    .btn-limpar:hover { background: var(--vc); }
+
+    /* ── FEEDBACK ── */
+    .feedback {
+      margin-top: 14px; padding: 12px 16px; border-radius: var(--rad);
+      font-size: 13px; font-weight: 500; text-align: center;
+      animation: fadeUp .25s ease; display: none;
+    }
+    .feedback.ok    { background: var(--vc); color: var(--vg); border: 1px solid var(--va); }
+    .feedback.erro  { background: var(--erc); color: var(--er); border: 1px solid #FFCDD2; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      main { padding: 20px 16px 80px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column-reverse; }
+      .btn-enviar, .btn-limpar { width: 100%; text-align: center; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="h-inner">
+    <div class="h-logo">
+      <img src="data:image/png;base64,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" alt="Oliveira Energia" style="height:42px;object-fit:contain;display:block;background:white;border-radius:6px;padding:2px 8px;">
+      <div>
+        <div class="h-company">OLIVEIRA ENERGIA</div>
+        <span class="h-sub">Emissão de Romaneio</span>
+      </div>
+    </div>
+    <div class="h-clock" id="clock"></div>
+  </div>
+</header>
+
+<main>
+  <div style="margin-bottom:24px">
+    <h1 class="pg-title">Novo Romaneio de Expedição</h1>
+    <p class="pg-sub" style="margin-top:4px">Selecione a data, o motorista, adicione destinos e bipe as notas fiscais</p>
+  </div>
+
+  <!-- ── Card 1: Dados do Embarque ── -->
+  <div class="card">
+    <div class="ct"><div class="ct-bar"></div>Dados do Embarque</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Data do Embarque <span class="req">*</span></label>
+        <input type="date" id="dataEmbarque">
+      </div>
+
+      <div class="field">
+        <label>Motorista <span class="req">*</span></label>
+        <select id="motorista" onchange="toggleOutroMotorista(this.value)">
+          <option value="">Selecione o motorista</option>
+          <option>Antonio Marcos</option>
+          <option>Cleyton Barros</option>
+          <option>Rodrigo Pinheiro</option>
+          <option value="__outro__">Outro motorista…</option>
+        </select>
+        <input type="text" id="outro-motorista"
+               placeholder="Digite o nome do motorista"
+               style="display:none;margin-top:8px">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Card 2: Destinos ── -->
+  <div class="card">
+    <div class="ct">
+      <div class="ct-bar"></div>
+      Destinos e Notas Fiscais
+      <span id="total-badge" style="margin-left:auto;font-family:var(--fnt-b);font-size:12px;font-weight:600;color:var(--ts);text-transform:none;letter-spacing:0"></span>
+    </div>
+
+    <!-- Camera global (one shared, moves between destinos) -->
+    <div class="cam-global" id="cam-global">
+      <div class="cam-bar">
+        <div class="cam-bar-info">
+          <div class="cam-dot"></div>
+          Escaneando para: <strong id="cam-label">—</strong>
+        </div>
+        <button class="btn-close-cam" onclick="fecharCamera()">✕ Fechar câmera</button>
+      </div>
+      <div class="cam-wrap-inner">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="scan-overlay">
+          <div class="scan-frame"><div class="scan-beam"></div></div>
+          <span class="scan-msg">Aponte para o código de barras da NF-e</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container onde os destinos são renderizados -->
+    <div id="destinos-container"></div>
+
+    <button class="btn-add-dest" onclick="adicionarDestino()">
+      ＋ Adicionar outro destino
+    </button>
+
+    <div id="sem-sup" class="sem-sup">
+      ⚠️ Câmera não suportada neste navegador. Use Chrome ou Edge (PC/Android) para escanear.
+    </div>
+  </div>
+
+  <!-- ── Actions ── -->
+  <div class="actions">
+    <button class="btn-limpar" onclick="limpar()">Limpar tudo</button>
+    <button class="btn-enviar" id="btn-enviar" onclick="enviarRomaneio()">Enviar Romaneio →</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+</main>
+
+<script>
+  // ══════════════════════════════════════════════════════════════
+  // ⚙️  CONFIGURAÇÃO
+  // ══════════════════════════════════════════════════════════════
+  const DB_URL = 'https://expedicao-7a8bf-default-rtdb.firebaseio.com'; // ex: https://seu-projeto-default-rtdb.firebaseio.com
+  // ══════════════════════════════════════════════════════════════
+  // 42 USINAS — ordem alfabética
+  // ══════════════════════════════════════════════════════════════
+  const USINAS = [
+    "ARARAS","AUGUSTO MONTENEGRO","BARCELOS","BARREIRINHA","BELO MONTE",
+    "BERURI","BOA VISTA DO RAMOS","BOCA DO ACRE","CABURI","CAMPINAS",
+    "CANUTAMA","CAREIRO DA VARZEA","CASTANHO I (CAREIRO KM 27)","CASTANHO II (KM 100)",
+    "CAVIANA","CUCUÍ","IAUARETÊ","ITAPURU","LÁBREA","MANAQUIRI",
+    "MAUÉS","MOCAMBO","MOURA","NHAMUNDÁ","NOVO AIRÃO","NOVO CÉU",
+    "NOVO REMANSO","PARAUÁ","PAUINI","PEDRAS","SACAMBU",
+    "SANTA ISABEL DO RIO NEGRO","SANTANA DO UATUMÃ","SÃO SEBASTIÃO DO UATUMÃ",
+    "TAPAUÁ","TUIUÉ","URUCARÁ","URUCURITUBA","VILA AMAZÔNIA",
+    "VILA DE CARVOEIRO","VILA LINDÓIA","VILA URUCURITUBA"
+  ];
+
+  // ══════════════════════════════════════════════════════════════
+  // ESTADO
+  // ══════════════════════════════════════════════════════════════
+  let destinos      = [];
+  let nextId        = 1;
+  let cameraStream  = null;
+  let detector      = null;
+  let scanInterval  = null;
+  let camDestinoId  = null;
+  let lastScan      = '';
+
+  // ══════════════════════════════════════════════════════════════
+  // INIT
+  // ══════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    // Data de hoje
+    const hoje = new Date();
+    document.getElementById('dataEmbarque').value =
+      hoje.toISOString().split('T')[0];
+
+    // Suporte à câmera
+    if (!('BarcodeDetector' in window)) {
+      document.getElementById('sem-sup').style.display = 'block';
+    }
+
+    // Relógio
+    atualizarClock();
+    setInterval(atualizarClock, 1000);
+
+    // Primeiro destino
+    adicionarDestino();
+  });
+
+  function toggleOutroMotorista(valor) {
+    const inp = document.getElementById('outro-motorista');
+    if (valor === '__outro__') {
+      inp.style.display = 'block';
+      inp.focus();
+    } else {
+      inp.style.display = 'none';
+      inp.value = '';
+    }
+  }
+
+  function atualizarClock() {
+    document.getElementById('clock').textContent = new Date()
+      .toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // GESTÃO DE DESTINOS
+  // ══════════════════════════════════════════════════════════════
+  function adicionarDestino() {
+    const id = `d${nextId++}`;
+    destinos.push({ id, usina: '', notas: [] });
+    renderDestinos();
+    // Focar o select do último destino
+    setTimeout(() => {
+      const sel = document.getElementById(`us-${id}`);
+      if (sel) sel.focus();
+    }, 50);
+  }
+
+  function removerDestino(id) {
+    if (destinos.length === 1) {
+      mostrarFeedback('Deve haver ao menos um destino no romaneio.', 'erro');
+      return;
+    }
+    if (camDestinoId === id) fecharCamera();
+    destinos = destinos.filter(d => d.id !== id);
+    renderDestinos();
+  }
+
+  function selecionarUsina(id, usina) {
+    const dest = destinos.find(d => d.id === id);
+    if (!dest) return;
+    dest.usina = usina;
+
+    // Atualizar rótulo no header do card
+    const lbl = document.getElementById(`lbl-${id}`);
+    if (lbl) {
+      lbl.textContent = usina || 'Selecione a usina de destino';
+      lbl.className   = `dest-label${usina ? '' : ' ph'}`;
+    }
+
+    // Atualizar label da câmera se ativa neste destino
+    if (camDestinoId === id && usina) {
+      document.getElementById('cam-label').textContent = usina;
+    }
+  }
+
+  function renderDestinos() {
+    const container = document.getElementById('destinos-container');
+
+    // Salvar valores dos inputs antes de re-renderizar
+    const inputs = {};
+    destinos.forEach(d => {
+      const el = document.getElementById(`inp-${d.id}`);
+      if (el) inputs[d.id] = el.value;
+    });
+
+    container.innerHTML = destinos.map((d, i) => gerarDestinoHTML(d, i + 1)).join('');
+
+    // Restaurar valores
+    destinos.forEach(d => {
+      if (inputs[d.id]) {
+        const el = document.getElementById(`inp-${d.id}`);
+        if (el) el.value = inputs[d.id];
+      }
+      // Renderizar chips
+      atualizarChips(d.id);
+    });
+
+    // Estilo cam ativa
+    sincronizarEstiloCam();
+
+    // Atualizar totais
+    atualizarTotal();
+
+    // Esconder btn câmera se sem suporte
+    if (!('BarcodeDetector' in window)) {
+      document.querySelectorAll('.btn-cam').forEach(b => b.style.display = 'none');
+    }
+  }
+
+  function gerarDestinoHTML(d, n) {
+    const opts = USINAS.map(u =>
+      `<option value="${u}"${d.usina === u ? ' selected' : ''}>${u}</option>`
+    ).join('');
+
+    return `
+      <div class="destino-card" id="card-${d.id}">
+        <div class="dest-hdr">
+          <div class="dest-num">${n}</div>
+          <span class="dest-label${d.usina ? '' : ' ph'}" id="lbl-${d.id}">${d.usina || 'Selecione a usina de destino'}</span>
+          <button class="btn-del-dest" onclick="removerDestino('${d.id}')" title="Remover destino">✕</button>
+        </div>
+
+        <div class="field" style="margin-bottom:10px">
+          <label>Usina / Localidade</label>
+          <select id="us-${d.id}" onchange="selecionarUsina('${d.id}', this.value)">
+            <option value="">Selecione...</option>
+            ${opts}
+          </select>
+        </div>
+
+        <label style="font-size:11px;font-weight:600;color:var(--ts);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px;margin-bottom:5px">
+          Notas Fiscais
+          <span id="cnt-${d.id}" style="color:var(--va);font-weight:700"></span>
+        </label>
+
+        <div class="chips-area" id="chips-${d.id}">
+          <span class="empty-hint">Nenhuma nota adicionada — bipe ou digite abaixo</span>
+        </div>
+
+        <div class="input-row">
+          <div class="nfe-grp">
+            <input type="text" id="inp-${d.id}"
+              placeholder="Chave (44 dígitos) ou número da NF"
+              maxlength="44" inputmode="numeric"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();adicionarNota('${d.id}')}">
+            <button class="btn-add" onclick="adicionarNota('${d.id}')">+ Adicionar</button>
+          </div>
+          <button class="btn-cam" id="bcam-${d.id}" onclick="toggleCamera('${d.id}')" title="Abrir câmera para este destino">📷</button>
+        </div>
+      </div>`;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // GESTÃO DE NOTAS
+  // ══════════════════════════════════════════════════════════════
+  function extrairNF(input) {
+    const s = input.replace(/\D/g, '');
+    if (s.length === 44) {
+      const num = parseInt(s.substring(25, 34), 10);
+      return { chave: s, display: `NF ${num.toLocaleString('pt-BR')}` };
+    }
+    if (s.length >= 1 && s.length <= 9) {
+      return { chave: s, display: `NF ${parseInt(s, 10).toLocaleString('pt-BR')}` };
+    }
+    return null;
+  }
+
+  function adicionarNota(destId) {
+    const inp   = document.getElementById(`inp-${destId}`);
+    const valor = inp.value.trim();
+    if (!valor) return;
+
+    const nf = extrairNF(valor);
+    if (!nf) {
+      mostrarFeedback('Código inválido. Use a chave de 44 dígitos ou o número da NF.', 'erro');
+      return;
+    }
+
+    // Verificar duplicata em TODOS os destinos
+    if (destinos.some(d => d.notas.some(n => n.chave === nf.chave))) {
+      mostrarFeedback('Essa nota já está em um destino.', 'erro');
+      inp.value = '';
+      return;
+    }
+
+    const dest = destinos.find(d => d.id === destId);
+    if (dest) {
+      dest.notas.push(nf);
+      atualizarChips(destId);
+      atualizarTotal();
+      inp.value = '';
+      inp.focus();
+      esconderFeedback();
+      }
+  }
+
+  function removerNota(destId, chave) {
+    const dest = destinos.find(d => d.id === destId);
+    if (dest) {
+      dest.notas = dest.notas.filter(n => n.chave !== chave);
+      atualizarChips(destId);
+      atualizarTotal();
+    }
+  }
+
+  function atualizarChips(destId) {
+    const dest  = destinos.find(d => d.id === destId);
+    const area  = document.getElementById(`chips-${destId}`);
+    const cnt   = document.getElementById(`cnt-${destId}`);
+    if (!dest || !area) return;
+
+    area.querySelectorAll('.chip').forEach(c => c.remove());
+    const hint = area.querySelector('.empty-hint');
+
+    if (dest.notas.length === 0) {
+      if (hint) hint.style.display = 'block';
+      if (cnt)  cnt.textContent = '';
+    } else {
+      if (hint) hint.style.display = 'none';
+      dest.notas.forEach(nf => {
+        const c = document.createElement('div');
+        c.className = 'chip';
+        c.innerHTML = `
+          <span class="chip-lbl">${nf.display}</span>
+          <button class="chip-rm" onclick="removerNota('${destId}','${nf.chave}')" title="Remover">✕</button>`;
+        area.appendChild(c);
+      });
+      if (cnt) cnt.textContent = `(${dest.notas.length})`;
+    }
+  }
+
+  function atualizarTotal() {
+    const total    = destinos.reduce((s, d) => s + d.notas.length, 0);
+    const ndest    = destinos.filter(d => d.notas.length > 0).length;
+    const badge    = document.getElementById('total-badge');
+    badge.textContent = total > 0
+      ? `${total} nota${total > 1 ? 's' : ''} · ${ndest} destino${ndest > 1 ? 's' : ''}`
+      : '';
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // CÂMERA
+  // ══════════════════════════════════════════════════════════════
+  async function toggleCamera(destId) {
+    if (camDestinoId === destId && cameraStream) {
+      fecharCamera();
+    } else {
+      await abrirCamera(destId);
+    }
+  }
+
+  async function abrirCamera(destId) {
+    if (cameraStream) fecharCamera();
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 } }
+      });
+
+      camDestinoId = destId;
+      const dest   = destinos.find(d => d.id === destId);
+      document.getElementById('cam-label').textContent = dest?.usina || '(selecione a usina acima)';
+
+      document.getElementById('video').srcObject = cameraStream;
+      document.getElementById('cam-global').classList.add('aberta');
+      document.getElementById(`bcam-${destId}`)?.classList.add('ativa');
+
+      sincronizarEstiloCam();
+
+      detector = new BarcodeDetector({ formats: ['code_128','code_39','itf','qr_code'] });
+      lastScan  = '';
+      scanInterval = setInterval(escanear, 350);
+
+    } catch (_) {
+      mostrarFeedback('Câmera indisponível. Verifique as permissões do navegador.', 'erro');
+      cameraStream = null; camDestinoId = null;
+    }
+  }
+
+  function fecharCamera() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+
+    if (camDestinoId) document.getElementById(`bcam-${camDestinoId}`)?.classList.remove('ativa');
+    camDestinoId = null;
+
+    document.getElementById('cam-global').classList.remove('aberta');
+    sincronizarEstiloCam();
+  }
+
+  function sincronizarEstiloCam() {
+    destinos.forEach(d => {
+      const card = document.getElementById(`card-${d.id}`);
+      if (!card) return;
+      card.classList.toggle('cam-on', d.id === camDestinoId);
+    });
+  }
+
+  async function escanear() {
+    const video = document.getElementById('video');
+    if (!video.readyState || !detector || !camDestinoId) return;
+
+    try {
+      const results = await detector.detect(video);
+      if (!results.length) return;
+
+      const raw = results[0].rawValue.replace(/\D/g, '');
+      if (!raw || raw === lastScan) return;
+      lastScan = raw;
+
+      const nf = extrairNF(raw);
+      if (!nf) return;
+
+      if (!destinos.some(d => d.notas.some(n => n.chave === nf.chave))) {
+        const dest = destinos.find(d => d.id === camDestinoId);
+        if (dest) {
+          dest.notas.push(nf);
+          atualizarChips(camDestinoId);
+          atualizarTotal();
+          if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+        }
+      }
+
+      await new Promise(r => setTimeout(r, 900));
+      lastScan = '';
+    } catch (_) {}
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ENVIO
+  // ══════════════════════════════════════════════════════════════
+  async function enviarRomaneio() {
+    const dataRaw      = document.getElementById('dataEmbarque').value;
+    const selMotorista = document.getElementById('motorista').value;
+    let   motorista    = selMotorista;
+
+    if (!dataRaw)      { mostrarFeedback('Informe a data do embarque.', 'erro'); return; }
+    if (!selMotorista) { mostrarFeedback('Selecione o motorista.', 'erro');      return; }
+
+    if (selMotorista === '__outro__') {
+      motorista = document.getElementById('outro-motorista').value.trim();
+      if (!motorista) { mostrarFeedback('Digite o nome do motorista.', 'erro'); return; }
+    }
+
+    const destinosValidos = destinos.filter(d => d.usina && d.notas.length > 0);
+    if (destinosValidos.length === 0) {
+      mostrarFeedback('Selecione ao menos uma usina e adicione ao menos uma nota.', 'erro'); return;
+    }
+
+    const semUsina = destinos.filter(d => !d.usina && d.notas.length > 0);
+    if (semUsina.length > 0) {
+      mostrarFeedback('Há notas em destinos sem usina definida. Selecione a usina ou remova o destino.', 'erro'); return;
+    }
+
+    const [a, m, d] = dataRaw.split('-');
+    const dataFmt    = `${d}/${m}/${a}`;
+    const totalNotas = destinosValidos.reduce((s, d) => s + d.notas.length, 0);
+
+    const btn = document.getElementById('btn-enviar');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    esconderFeedback();
+
+    try {
+      // ── 1. Pegar e incrementar contador de romaneios ──────────
+      const cResp = await fetch(`${DB_URL}/meta/ultimoRomaneio.json`);
+      const atual  = (await cResp.json()) || 0;
+      const numero = String(atual + 1).padStart(4, '0');
+
+      await fetch(`${DB_URL}/meta/ultimoRomaneio.json`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(atual + 1)
+      });
+
+      // ── 2. Salvar romaneio no Firebase ────────────────────────
+      const agora = new Date().toLocaleString('pt-BR',
+        { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+      const payload = {
+        numero,
+        dataHoraEnvio: agora,
+        dataEmbarque:  dataFmt,
+        motorista,
+        destinos:      JSON.stringify(destinosValidos.map(d => ({ usina: d.usina, notas: d.notas }))),
+        totalNotas
+      };
+
+      const resp = await fetch(`${DB_URL}/romaneios.json`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload)
+      });
+
+      if (!resp.ok) throw new Error(`Firebase respondeu ${resp.status}`);
+
+      mostrarFeedback(`✔ Romaneio Nº ${numero} enviado com sucesso!`, 'ok');
+      fecharCamera();
+      setTimeout(limpar, 2500);
+
+    } catch (err) {
+      mostrarFeedback(`Erro ao enviar: ${err.message}`, 'erro');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enviar Romaneio →';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // UTILITÁRIOS
+  // ══════════════════════════════════════════════════════════════
+  function limpar() {
+    fecharCamera();
+    document.getElementById('dataEmbarque').value =
+      new Date().toISOString().split('T')[0];
+
+    document.getElementById('motorista').value = '';
+    toggleOutroMotorista('');
+    nextId = 1; destinos = [];
+    adicionarDestino();
+    esconderFeedback();
+  }
+
+  function mostrarFeedback(msg, tipo) {
+    const el = document.getElementById('feedback');
+    el.textContent = msg; el.className = `feedback ${tipo}`; el.style.display = 'block';
+    if (tipo === 'erro') setTimeout(esconderFeedback, 5000);
+  }
+
+  function esconderFeedback() {
+    document.getElementById('feedback').style.display = 'none';
+  }
+</script>
+</body>
+</html>
